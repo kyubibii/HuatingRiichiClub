@@ -1,8 +1,8 @@
 # 项目初始化命令指南
 
-> 目标架构：FastAPI 后端 + Vue3 OP（后台管理） + UniApp 小程序  
-> 运行环境：WSL2 Debian / Linux（生产）+ Windows 本地（开发）  
-> 容器化：Docker + docker-compose  
+> 目标架构：FastAPI 后端 + Vue3 OP（后台管理） + UniApp 小程序
+> 运行环境：WSL2 Debian / Linux（生产）+ Windows 本地（开发）
+> 容器化：Docker + docker-compose
 > 版本策略：截至 2026 年稳定最新版
 
 ---
@@ -11,15 +11,15 @@
 
 ### 1.1 所需工具版本
 
-| 工具 | 最低版本 | 推荐安装方式 | 用途 |
-|------|---------|-------------|------|
-| Python | 3.12+ | pyenv / 系统包管理器 | FastAPI 后端 |
-| uv | 0.5+ | `pip install uv` 或官方脚本 | Python 包管理 |
-| Node.js | 20 LTS | nvm / fnm | Vue3 + UniApp |
-| pnpm | 9+ | `npm install -g pnpm` | 前端包管理 |
-| Docker | 27+ | Docker Desktop (Win) / apt (Debian) | 容器化 |
-| HBuilderX | 4.x | 官网下载 | UniApp 开发（可选，CLI 替代） |
-| Git | 2.40+ | 系统包管理器 | 版本控制 |
+| 工具      | 最低版本 | 推荐安装方式                        | 用途                          |
+| --------- | -------- | ----------------------------------- | ----------------------------- |
+| Python    | 3.12+    | pyenv / 系统包管理器                | FastAPI 后端                  |
+| uv        | 0.5+     | `pip install uv` 或官方脚本       | Python 包管理                 |
+| Node.js   | 20 LTS   | nvm / fnm                           | Vue3 + UniApp                 |
+| pnpm      | 9+       | `npm install -g pnpm`             | 前端包管理                    |
+| Docker    | 27+      | Docker Desktop (Win) / apt (Debian) | 容器化                        |
+| HBuilderX | 4.x      | 官网下载                            | UniApp 开发（可选，CLI 替代） |
+| Git       | 2.40+    | 系统包管理器                        | 版本控制                      |
 
 ### 1.2 Windows 本地环境检查命令（PowerShell）
 
@@ -39,18 +39,18 @@ git --version             # 期望: git version 2.x.x
 # 更新系统
 sudo apt update && sudo apt upgrade -y
 
-# 安装 Python 3.12
-sudo apt install python3.12 python3.12-venv python3.12-dev -y
+# 安装 Python 3
+sudo apt install -y python3 python3-venv python3-dev
 
 # 安装 uv
 curl -LsSf https://astral.sh/uv/install.sh | sh
 source ~/.bashrc
 
-# 安装 Node 20 LTS（通过 nvm）
+# 安装 Node 22 LTS（通过 nvm）
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
 source ~/.bashrc
-nvm install 20
-nvm use 20
+nvm install 22
+nvm use 22
 
 # 安装 pnpm
 npm install -g pnpm
@@ -116,7 +116,7 @@ cd HuatingRiichiClub/service
 
 # 创建 backend 目录并初始化 uv 项目
 mkdir backend && cd backend
-uv init --python 3.12
+uv init --python 3.13
 
 # 添加核心依赖
 uv add fastapi[standard]     # FastAPI + uvicorn + pydantic
@@ -262,6 +262,7 @@ pnpm build
 ### 5.1 开发态（代理模式）
 
 开发阶段前后端分别跑在不同端口，通过 Vite 代理联调：
+
 - FastAPI：`localhost:8000`（API 服务）
 - Vue3 Dev Server：`localhost:5173`（前端开发服务，代理 `/api` → `:8000`）
 
@@ -301,13 +302,13 @@ if FRONTEND_DIST.exists():
 
 ### 5.3 路由隔离规则
 
-| 请求路径 | 处理方 | 说明 |
-|---------|--------|------|
-| `/api/v1/*` | FastAPI Router | 所有 REST API |
-| `/ws/*` | FastAPI WebSocket | 实时台桌状态 |
-| `/docs` | FastAPI Swagger UI | 仅开发环境暴露 |
-| `/assets/*` | 静态文件挂载 | Vue3 构建产物 |
-| 其他所有路径 | SPA 回退 → `index.html` | Vue Router 接管 |
+| 请求路径      | 处理方                    | 说明            |
+| ------------- | ------------------------- | --------------- |
+| `/api/v1/*` | FastAPI Router            | 所有 REST API   |
+| `/ws/*`     | FastAPI WebSocket         | 实时台桌状态    |
+| `/docs`     | FastAPI Swagger UI        | 仅开发环境暴露  |
+| `/assets/*` | 静态文件挂载              | Vue3 构建产物   |
+| 其他所有路径  | SPA 回退 →`index.html` | Vue Router 接管 |
 
 ---
 
@@ -328,10 +329,12 @@ if FRONTEND_DIST.exists():
 # 安装 @dcloudio/uvm 统一版本管理
 npm install -g @dcloudio/uvm
 
-# 使用 cli 创建（Vue3 + TypeScript + Vite）
-npx degit dcloudio/uni-preset-vue#vite-ts HuatingRiichiClub/uniapp
+# 在powershell使用 cli 创建
+cd F:\projects\riichi\HuatingRiichiClub
 
-cd HuatingRiichiClub/uniapp
+npx degit dcloudio/uni-preset-vue#vite-ts uniapp
+
+cd .\uniapp
 pnpm install
 
 # 运行到微信小程序（需要 HBuilderX 或微信开发者工具）
@@ -541,78 +544,19 @@ docker compose down -v  # 同时清理数据卷（危险！）
 
 ---
 
-## 八、本地开发快速启动（非 Docker）
+## 八、注意事项
 
-### 8.1 一键启动脚本（WSL2 Bash）
-
-```bash
-#!/bin/bash
-# scripts/dev-start.sh
-
-set -e
-
-# 启动 FastAPI 后端
-echo "启动 FastAPI 后端..."
-cd service/backend
-uv run fastapi dev app/main.py &
-BACKEND_PID=$!
-echo "FastAPI PID: $BACKEND_PID"
-
-# 启动 Vue3 OP
-echo "启动 Vue3 OP..."
-cd ../frontend
-pnpm dev &
-FRONTEND_PID=$!
-echo "Vue3 OP PID: $FRONTEND_PID"
-
-echo ""
-echo "服务已启动："
-echo "  FastAPI:  http://localhost:8000"
-echo "  Swagger:  http://localhost:8000/docs"
-echo "  Vue3 OP:  http://localhost:5173"
-echo ""
-echo "按 Ctrl+C 停止所有服务"
-
-# 等待中断信号
-trap "kill $BACKEND_PID $FRONTEND_PID 2>/dev/null" EXIT
-wait
-```
-
-### 8.2 Windows PowerShell 并行启动
-
-```powershell
-# scripts/dev-start.ps1
-$backend = Start-Process -PassThru -NoNewWindow powershell {
-    Set-Location .\service\backend
-    uv run fastapi dev app/main.py
-}
-$frontend = Start-Process -PassThru -NoNewWindow powershell {
-    Set-Location .\service\frontend
-    pnpm dev
-}
-
-Write-Host "FastAPI: http://localhost:8000"
-Write-Host "Vue3 OP: http://localhost:5173"
-Write-Host "Press Enter to stop..."
-Read-Host
-Stop-Process $backend.Id, $frontend.Id -Force
-```
-
----
-
-## 九、注意事项
-
-### 9.1 WSL2 与 Windows 路径映射
+### 8.1 WSL2 与 Windows 路径映射
 
 - WSL2 中访问 Windows 文件：`/mnt/c/Users/...` 或 `/mnt/f/projects/riichi`
 - Windows 中访问 WSL2 文件：`\\wsl$\Debian\home\...`
 - **推荐**：所有项目文件存放在 WSL2 文件系统内（`~/projects/`），避免跨文件系统 IO 性能损耗
 
-### 9.2 端口暴露
+### 8.2 端口暴露
 
 WSL2 的服务默认通过 `localhost` 转发到 Windows 主机，无需额外配置。若使用固定 IP 可在 `~/.wslconfig` 中调整。
 
-### 9.3 `.env` 文件管理
+### 8.3 `.env` 文件管理
 
 ```bash
 # service/backend/.env.example（提交到版本控制）
@@ -632,6 +576,7 @@ COS_SECRET_KEY=your-key
 ```
 
 **不要将 `.env` 提交到 Git**，在 `.gitignore` 中排除：
+
 ```
 .env
 *.env.local

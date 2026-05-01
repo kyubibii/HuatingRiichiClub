@@ -1,0 +1,72 @@
+services:
+  db:
+    image: ${MYSQL_IMAGE:-docker.io/library/mysql:8.0}
+    container_name: huating-db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root123456}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-huating}
+      MYSQL_USER: ${MYSQL_USER:-huating}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-huating123456}
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${MYSQL_ROOT_PASSWORD:-root123456}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  redis:
+    image: ${REDIS_IMAGE:-docker.io/library/redis:7-alpine}
+    container_name: huating-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --save 60 1 --loglevel warning
+
+  frontend-builder:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: dist
+      args:
+        NODE_IMAGE: ${NODE_IMAGE:-docker.io/library/node:20-bookworm-slim}
+        ALPINE_IMAGE: ${ALPINE_IMAGE:-docker.io/library/alpine:3.21}
+    container_name: huating-frontend-builder
+    volumes:
+      - frontend_dist:/dist
+    restart: "no"
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        PYTHON_IMAGE: ${PYTHON_IMAGE:-docker.io/library/python:3.13-slim}
+    container_name: huating-backend
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-mysql+aiomysql://huating:huating123456@db:3306/huating}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
+      JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
+      WECHAT_APP_ID: ${WECHAT_APP_ID:-}
+      WECHAT_APP_SECRET: ${WECHAT_APP_SECRET:-}
+    volumes:
+      - frontend_dist:/app/frontend/dist:ro
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      frontend-builder:
+        condition: service_completed_successfully
+
+volumes:
+  db_data:
+  redis_data:
+  frontend_dist:
