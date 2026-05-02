@@ -1,4 +1,4 @@
-# 华庭日麻俱乐部（HuatingRiichiClub）重构项目
+# 日麻俱乐部（HuatingRiichiClub）重构项目
 
 本仓库用于把原有的老日麻雀庄运营系统重构为现代化架构：后端使用 FastAPI、管理后台使用 Vue 3、移动小程序使用 UniApp。目标是可维护、模块化、便于本地开发与自动部署。
 
