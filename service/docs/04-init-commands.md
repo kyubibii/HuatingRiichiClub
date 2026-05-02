@@ -566,7 +566,7 @@ JWT_SECRET=your-secret-key-change-in-production
 JWT_ALGORITHM=HS256
 JWT_EXPIRE_MINUTES=1440
 
-WECHAT_APP_ID=wx92b0665554e342e6
+WECHAT_APP_ID=your-appid
 WECHAT_APP_SECRET=your-secret
 
 COS_BUCKET=your-bucket
